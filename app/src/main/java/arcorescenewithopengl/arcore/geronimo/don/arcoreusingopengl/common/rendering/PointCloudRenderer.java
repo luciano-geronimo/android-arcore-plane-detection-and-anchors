@@ -53,12 +53,12 @@ public class PointCloudRenderer {
 
   /**
    * Allocates and initializes OpenGL resources needed by the plane renderer. Must be called on the
-   * OpenGL thread, typically in {@link GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)}.
+   * OpenGL thread, typically in {@link GLSurfaceView.Renderer onSurfaceCreated(GL10, EGLConfig)}.
    *
    * @param context Needed to access shader source.
    */
   public void createOnGlThread(Context context) throws IOException {
-    com.google.ar.core.examples.java.common.rendering.ShaderUtil.checkGLError(TAG, "before create");
+    ShaderUtil.checkGLError(TAG, "before create");
 
     int[] buffers = new int[1];
     GLES20.glGenBuffers(1, buffers, 0);

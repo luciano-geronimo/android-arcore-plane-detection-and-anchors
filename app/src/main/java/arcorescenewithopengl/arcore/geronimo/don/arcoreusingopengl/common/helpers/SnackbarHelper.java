@@ -16,6 +16,9 @@ package arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpe
 
 import android.app.Activity;
 
+//import android.support.design.widget.BaseTransientBottomBar;
+//import android.support.design.widget.Snackbar;
+
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -28,7 +31,7 @@ import android.widget.TextView;
 public final class SnackbarHelper {
   private static final int BACKGROUND_COLOR = 0xbf323232;
   private Snackbar messageSnackbar;
-  private enum DismissBehavior { HIDE, SHOW, FINISH };
+  private enum DismissBehavior { HIDE, SHOW, FINISH }
   private int maxLines = 2;
 
   public boolean isShowing() {
@@ -59,15 +62,12 @@ public final class SnackbarHelper {
    */
   public void hide(Activity activity) {
     activity.runOnUiThread(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (messageSnackbar != null) {
-              messageSnackbar.dismiss();
-            }
-            messageSnackbar = null;
-          }
-        });
+            () -> {
+              if (messageSnackbar != null) {
+                messageSnackbar.dismiss();
+              }
+              messageSnackbar = null;
+            });
   }
 
   public void setMaxLines(int lines) {
@@ -89,12 +89,7 @@ public final class SnackbarHelper {
             if (dismissBehavior != DismissBehavior.HIDE) {
               messageSnackbar.setAction(
                   "Dismiss",
-                  new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                      messageSnackbar.dismiss();
-                    }
-                  });
+                      v -> messageSnackbar.dismiss());
               if (dismissBehavior == DismissBehavior.FINISH) {
                 messageSnackbar.addCallback(
                     new BaseTransientBottomBar.BaseCallback<Snackbar>() {
