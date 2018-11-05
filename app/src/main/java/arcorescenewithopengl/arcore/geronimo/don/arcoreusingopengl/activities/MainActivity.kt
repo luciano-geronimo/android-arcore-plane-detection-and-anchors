@@ -1,7 +1,8 @@
-package arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl
+package arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.activities
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.R
 
 class MainActivity : AppCompatActivity() {
 
