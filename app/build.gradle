@@ -27,6 +27,8 @@ android {
 }
 
 dependencies {
+    implementation 'com.android.support:design:27.0.0'
+
     // ARCore library
     implementation 'com.google.ar:core:1.5.0'
 

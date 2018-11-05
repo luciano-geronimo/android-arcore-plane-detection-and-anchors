@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.core.examples.java.common.helpers;
+package arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpers;
 
 import android.app.Activity;
+
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.view.View;

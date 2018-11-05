@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.core.examples.java.common.rendering;
+package arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.rendering;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -58,7 +58,7 @@ public class PointCloudRenderer {
    * @param context Needed to access shader source.
    */
   public void createOnGlThread(Context context) throws IOException {
-    ShaderUtil.checkGLError(TAG, "before create");
+    com.google.ar.core.examples.java.common.rendering.ShaderUtil.checkGLError(TAG, "before create");
 
     int[] buffers = new int[1];
     GLES20.glGenBuffers(1, buffers, 0);
