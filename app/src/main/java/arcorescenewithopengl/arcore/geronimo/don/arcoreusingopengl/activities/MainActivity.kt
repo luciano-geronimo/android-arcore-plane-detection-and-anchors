@@ -4,14 +4,13 @@ import android.opengl.GLSurfaceView
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.R
-import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpers.CameraPermissionHelper
+import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpers.*
 import kotlinx.android.synthetic.main.activity_main.*
 
-import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpers.DisplayRotationHelper
-import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpers.SnackbarHelper
-import arcorescenewithopengl.arcore.geronimo.don.arcoreusingopengl.common.helpers.TapHelper
 import com.google.ar.core.ArCoreApk
+import com.google.ar.core.Camera
 import com.google.ar.core.Session
 import com.google.ar.core.exceptions.*
 import javax.microedition.khronos.egl.EGLConfig
@@ -123,4 +122,23 @@ class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if( !CameraPermissionHelper.hasCameraPermission(this) ){
+            Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG)
+                .show()
+            if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
+                // Permission denied with checking "Do not ask again".
+                CameraPermissionHelper.launchPermissionSettings(this)
+            }
+            finish()
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus)
+    }
+
+    
 }
