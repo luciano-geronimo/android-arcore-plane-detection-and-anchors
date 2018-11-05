@@ -110,4 +110,17 @@ class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
             }
         }
     }
+
+    override fun onPause() {
+        super.onPause()
+        if(session != null){
+//            // Note that the order matters - GLSurfaceView is paused first so that it does not try
+//            // to query the session. If Session is paused before GLSurfaceView, GLSurfaceView may
+//            // still call session.update() and get a SessionPausedException.
+            displayRotationHelper.onPause()
+            surfaceView.onPause()
+            session?.pause()
+        }
+    }
+
 }
