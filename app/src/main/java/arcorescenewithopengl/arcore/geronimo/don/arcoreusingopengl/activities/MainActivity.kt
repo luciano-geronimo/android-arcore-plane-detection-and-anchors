@@ -17,17 +17,21 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 import com.google.ar.core.exceptions.*
 import java.io.IOException
+import java.util.ArrayList
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
+    // Anchors created from taps used for object placing with a given color.
+    private class ColoredAnchor(val anchor: Anchor, val color: Array<Float>)
+
     val APP_TAG = "MeuAR"
     private val messageSnackbarHelper = SnackbarHelper()
     private val backgroundRenderer = BackgroundRenderer()
     private val virtualObject = ObjectRenderer()
-    private val virtualObjectShadow = ObjectRenderer()
     private val planeRenderer = PlaneRenderer()
     private val pointCloudRenderer = PointCloudRenderer()
+    private val anchors = ArrayList<ColoredAnchor>()
 
     private val snackbarHelper : SnackbarHelper = SnackbarHelper()
     private lateinit var displayRotationHelper : DisplayRotationHelper
@@ -50,6 +54,9 @@ class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
             backgroundRenderer.createOnGlThread(this)
             planeRenderer.createOnGlThread(this, "trigrid.png")
             pointCloudRenderer.createOnGlThread(this)
+            //O meu cubinho idiota
+            virtualObject.createOnGlThread(/*context=*/this, "models/untitled.obj", "models/face.png")
+            virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f)
         }
         catch (e:IOException){
             Log.e(APP_TAG, "Error reading asset file",e)
@@ -74,7 +81,7 @@ class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
             val camera = frame?.camera
 //Depois vejo isso qdo importar um objeto.
 //            // Handle one tap per frame.
-//            handleTap(frame, camera)
+            handleTap(frame!!, camera!!)
             //Renderização da câmera (o background)
             backgroundRenderer.draw(frame)
             // If not tracking, don't draw 3d objects.
@@ -113,24 +120,23 @@ class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
             val planes = session!!.getAllTrackables(Plane::class.java)
             val orientedPose = camera!!.displayOrientedPose
             planeRenderer.drawPlanes(planes, orientedPose, projmtx)
-//FAÇO DEPOIS, AINDA N TENHO TOUCH
-//            // Visualize anchors created by touch.
-//            val scaleFactor = 1.0f
-//            for (coloredAnchor in anchors) {
-//                if (coloredAnchor.anchor.getTrackingState() != TrackingState.TRACKING) {
-//                    continue
-//                }
-//                // Get the current pose of an Anchor in world space. The Anchor pose is updated
-//                // during calls to session.update() as ARCore refines its estimate of the world.
-//                coloredAnchor.anchor.getPose().toMatrix(anchorMatrix, 0)
-//
-//                // Update and draw the model and its shadow.
-//                virtualObject.updateModelMatrix(anchorMatrix, scaleFactor)
-//                virtualObjectShadow.updateModelMatrix(anchorMatrix, scaleFactor)
-//                virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba, coloredAnchor.color)
-//                virtualObjectShadow.draw(viewmtx, projmtx, colorCorrectionRgba, coloredAnchor.color)
-//            }
 
+            val anchorMatrix = FloatArray(16)
+            //desenho das anchors
+            val scaleFactor = 0.1f
+            for(coloredAnchor in anchors){
+                if ( coloredAnchor.anchor.trackingState != TrackingState.TRACKING){
+                    continue // ignora as que não estejam sendo rastradas
+                }
+                coloredAnchor.anchor.pose.toMatrix(anchorMatrix, 0)
+                virtualObject.updateModelMatrix(anchorMatrix, scaleFactor)
+                var color : FloatArray = FloatArray(coloredAnchor.color.size);
+                color[0] = coloredAnchor.color[0]
+                color[1] = coloredAnchor.color[1]
+                color[2] = coloredAnchor.color[2]
+                color[3] = coloredAnchor.color[3]
+                virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba, color)
+            }
         } catch (t: Throwable) {
             // Avoid crashing the application due to unhandled exceptions.
             Log.e(APP_TAG, "Exception on the OpenGL thread", t)
@@ -254,6 +260,37 @@ class MainActivity : AppCompatActivity(), GLSurfaceView.Renderer {
         super.onWindowFocusChanged(hasFocus)
         FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus)
     }
-
-
+    //Serve pra tratar os touches
+    private fun handleTap(frame:Frame, camera:Camera){
+        val tap = tapHelper.poll()
+        if(tap != null && camera.trackingState == TrackingState.TRACKING){
+            val hits = frame.hitTest(tap)
+            for (hit in hits){
+                val trackable = hit.trackable
+                if (//Cria uma anchor se um plano ou ponto orientado foi atingido
+                    (trackable is Plane
+                    && trackable.isPoseInPolygon(hit.hitPose)
+                    && (PlaneRenderer.calculateDistanceToPlane(hit.hitPose, camera.pose)>0))
+                    ||
+                    (trackable is Point && trackable.orientationMode ==Point.OrientationMode.ESTIMATED_SURFACE_NORMAL)
+                    )
+                 {
+                     //Limite pras anchors. Anchors são caras. Remove a 1a
+                     if (anchors.size >= 20){
+                         anchors[0].anchor.detach()
+                         anchors.removeAt(0)
+                     }
+                     var objColor= arrayOf(0.0f, 0.0f, 0.0f, 1.0f)
+                     if(trackable is Point){
+                         objColor = arrayOf(66.0f, 133.0f, 244.0f, 255.0f);
+                     }
+                     else if(trackable is Plane){
+                         objColor = arrayOf(139.0f, 195.0f, 74.0f, 255.0f)
+                     }
+                     anchors.add(ColoredAnchor(hit.createAnchor(), objColor))
+                     break
+                 }//Fim do loop que trata o touch ter interceptado um plano ou ponto.
+            }
+        }
+    }
 }
